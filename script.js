@@ -1,33 +1,149 @@
-/*
-  initializing the player canvas 
-  and 2d context of the canvas
-*/
-const player = document.getElementById("player");
-const ctx = player.getContext('2d');
-/*
-  setting the width and height of the
-  player on screen
-*/
-const CANVAS_WIDTH = player.width = 600 ;
-const CANVAS_HEIGHT = player.height = 600 ;
-
-const playerSprite = new Image();
-playerSprite.src = "res/shadow_dog.png";
-const spriteWidth = 575;// width/columns
-const spriteHeight = 523;// height/rows
-let FrameX = 0;
-let Action = 0;
-let gameFrame = 0;
-let staggerFrame = 5;
-
-function animate()
+window.addEventListener('load', function() 
 {
-    ctx.clearRect(0 , 0 , CANVAS_WIDTH, CANVAS_HEIGHT);
-    let postion = Math.floor(gameFrame/staggerFrame) % 6;
-    FrameX = postion * spriteWidth
-    ctx.drawImage(playerSprite, FrameX , Action * spriteHeight, spriteWidth, spriteHeight, 0, 0, spriteWidth, spriteHeight);
+    const canvas = document.getElementById("canvas1");
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 720;
+    perfectFrameTime = 1000/60 ;
+    //handle key events
+    class InputHandler
+    
+    {
+        constructor(){
+            this.keys = [];
+            window.addEventListener('keydown', e => 
+            {
+                if((e.key === "ArrowDown" ||
+                    e.key === "ArrowUp" ||
+                    e.key === "ArrowLeft" ||
+                    e.key === "ArrowRight" ) 
+                    && this.keys.indexOf(e.key) === -1)
+                {
+                    this.keys.push(e.key);
+                }
+            });
+            window.addEventListener('keyup', e =>
+            {
+                if( e.key === "ArrowDown" ||
+                    e.key === "ArrowUp" ||
+                    e.key === "ArrowLeft" ||
+                    e.key === "ArrowRight" ) 
+                {
+                    this.keys.splice(this.keys.indexOf(e.key), 1);
+                }
+            });
+        }
+    }
+    //handle Player
+    class Player
+    {
+        constructor(gameWidth, gameHeight)
+        {
+            this.gameWidth = gameWidth;
+            this.gameHeight = gameHeight;
+            this.width = 75 ;
+            this.height = 75;
+            this.x = 0;
+            this.y = this.gameHeight - this.height;
+            this.image = document.getElementById("playerImage3");
+            this.FrameX = 0 ;
+            this.FrameY = 0 ;
+            this.maxFrame = 7;
+            this.fps = 7;
+            this.frameTimer = 0;
+            this.frameInterval = 1000/this.fps;
+            this.speed = 0;
+            this.vy = 0;
+            this.gravity = 1;
+        }
+        draw(context)
+        {
+            context.drawImage(this.image,this.FrameX * this.width, this.FrameY * this.height,this.width,this.height,this.x,this.y,this.width,this.height);
+        }
+        //Player Movement
+        update(input, deltaTime)
+        {
+            //handle animation
+            if (this.frameTimer > this.frameInterval){
+                if(this.FrameX >= this.maxFrame) this.FrameX = 0;
+                else this.FrameX ++;
+                this.frameTimer = 0;
+            } else{
+                this.frameTimer += deltaTime;
+            }
 
-    gameFrame ++;
-    requestAnimationFrame(animate);
-}
-animate();
+            //handle input
+            if(input.keys.indexOf("ArrowRight") > -1)
+            {
+                this.speed = 5;
+            }             
+            else if(input.keys.indexOf("ArrowLeft") > -1)
+            {
+                this.speed = -5;   
+            }
+            else if(input.keys.indexOf("ArrowUp") > -1 && this.isGrounded())
+            {
+                this.vy -= 30;
+                this.maxFrame = 5;
+            }
+            else {
+                this.speed = 0;
+            }
+            //Horizontal Movement
+            this.x += this.speed;
+            if(this.x < 0) this.x = 0;
+            else if(this.x > this.gameWidth - this.width) this.x = this.gameWidth - this.width;
+            //Vertical Movement
+            this.y += this.vy;
+            if(!this.isGrounded())
+            {
+                this.vy += this.gravity;
+                this.FrameY = 0;
+            } 
+            else
+            {
+                this.vy = 0;
+                this.FrameY = 1;
+            }
+            if(this.vy >= 1)
+            {
+                this.FrameY = 0;
+            }
+            if(this.y >= this.gameHeight - this.height) this.y = this.gameHeight - this.height;
+        }
+        isGrounded()
+        {
+            return this.y >= this.gameHeight - this.height;
+        }
+    }
+    //Handles Background
+    class Background
+    {}
+    class Enemy
+    {}
+    function handleEnemies()
+    {}
+    function displayStatusText()
+    {}
+
+    const input = new InputHandler(0);
+    const player = new Player(canvas.width,canvas.height);
+
+    let lastTime = 0
+
+    function animate(timeStamp)
+    {
+        const deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        player.draw(ctx);
+        player.update(input, deltaTime);
+        requestAnimationFrame(animate);
+    }
+    animate(0);
+
+}); 
+
+
+
+
