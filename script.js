@@ -123,7 +123,6 @@ window.addEventListener('load', function()
             this.x += this.speed;
             if(this.x < 0) this.x = 0;
             else if(this.x > this.gameWidth - this.width) this.x = this.gameWidth - this.width;
-
             //Vertical Movement
             this.y += this.vy;
             if(!this.isGrounded())
